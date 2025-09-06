@@ -3,6 +3,8 @@
 This is a **harmless, reversible simulation** of ransomware behavior for educational demos.
 It runs on both **Windows** and **Linux (including Kali)** with Python 3.10+.
 
+<img width="1920" height="1080" alt="ransom" src="https://github.com/user-attachments/assets/07a40a4e-acc6-4262-9912-15e3bfd9e845" />
+
 ## Features
 - Choose a **Demo Directory** — simulator will only operate there (never touches system dirs).
 - Encrypts files using reversible XOR stream, renames with `.locked`.
