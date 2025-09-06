@@ -32,6 +32,9 @@ It runs on both **Windows** and **Linux (including Kali)** with Python 3.10+.
 ## Usage (Windows)
 Same as Linux, except you can also enable registry simulation for extra Sysmon telemetry.
 
+### You can see the tutorial from here. 
+https://youtu.be/FhoPieAxu58
+
 ## Safety Notes
 - Always point simulator at a throwaway demo folder, never `/` or `C:\`.
 - This is a **training/educational tool only**, not real ransomware.
