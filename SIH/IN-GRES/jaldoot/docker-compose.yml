@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  jaldoot:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=development
+      - FLASK_DEBUG=True
+      - SECRET_KEY=jaldoot-secret-key-2024
+      - DATABASE_URL=sqlite:///jaldoot/data/groundwater.db
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - INGRES_CONNSTR=${INGRES_CONNSTR}
+      - INGRES_BASE_URL=https://ingres.iith.ac.in
+    volumes:
+      - ./jaldoot/data:/app/jaldoot/data
+      - ./jaldoot/logs:/app/jaldoot/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+volumes:
+  redis_data:

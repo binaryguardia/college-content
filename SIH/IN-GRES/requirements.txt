@@ -1,0 +1,36 @@
+# JalDoot - Simplified Requirements for Quick Setup
+# Core Framework
+Flask==2.3.3
+Flask-CORS==4.0.0
+python-dotenv==1.0.0
+
+# Data Processing
+pandas>=1.5.0
+numpy>=1.24.0
+matplotlib>=3.7.0
+seaborn>=0.12.0
+plotly>=5.15.0
+
+# Database
+SQLAlchemy>=2.0.0
+Flask-SQLAlchemy>=3.0.0
+
+# AI and ML (Optional - will work without these)
+openai>=1.0.0
+tiktoken>=0.5.0
+
+# Voice Processing (Optional)
+speechrecognition>=3.10.0
+pyttsx3>=2.90
+gTTS>=2.4.0
+
+# Language Processing
+langdetect>=1.0.9
+
+# Utilities
+requests>=2.31.0
+Pillow>=10.0.0
+Werkzeug>=2.3.0
+
+# Development
+pytest>=7.4.0

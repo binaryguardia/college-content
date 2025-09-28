@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JalDoot Dashboard - Groundwater Data Analysis</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/dashboard.css') }}" rel="stylesheet">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-tint me-2"></i>JalDoot Dashboard
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/dashboard">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/api/health">API Status</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+                <div class="position-sticky pt-3">
+                    <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+                        <span>Filters</span>
+                    </h6>
+                    
+                    <!-- Region Filter -->
+                    <div class="px-3 mb-3">
+                        <label class="form-label fw-bold">Region</label>
+                        <select class="form-select" id="regionFilter">
+                            <option value="">All Regions</option>
+                            {% for region in regions %}
+                            <option value="{{ region }}">{{ region }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Year Filter -->
+                    <div class="px-3 mb-3">
+                        <label class="form-label fw-bold">Year</label>
+                        <select class="form-select" id="yearFilter">
+                            <option value="">All Years</option>
+                            {% for year in years %}
+                            <option value="{{ year }}">{{ year }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Language Selection -->
+                    <div class="px-3 mb-3">
+                        <label class="form-label fw-bold">Language</label>
+                        <div class="btn-group-vertical w-100" role="group">
+                            <input type="radio" class="btn-check" name="language" id="lang-en" value="en" checked>
+                            <label class="btn btn-outline-primary btn-sm" for="lang-en">English</label>
+                            
+                            <input type="radio" class="btn-check" name="language" id="lang-hi" value="hi">
+                            <label class="btn btn-outline-primary btn-sm" for="lang-hi">Hindi</label>
+                            
+                            <input type="radio" class="btn-check" name="language" id="lang-hinglish" value="hinglish">
+                            <label class="btn btn-outline-primary btn-sm" for="lang-hinglish">Hinglish</label>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="px-3">
+                        <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+                            <span>Quick Actions</span>
+                        </h6>
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-primary btn-sm" id="refreshData">
+                                <i class="fas fa-sync-alt me-1"></i>Refresh Data
+                            </button>
+                            <button class="btn btn-success btn-sm" id="exportData">
+                                <i class="fas fa-download me-1"></i>Export Data
+                            </button>
+                            <button class="btn btn-info btn-sm" id="voiceQuery">
+                                <i class="fas fa-microphone me-1"></i>Voice Query
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Main Content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">Groundwater Data Dashboard</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <div class="btn-group me-2">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="viewTable">
+                                <i class="fas fa-table"></i> Table View
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="viewCharts">
+                                <i class="fas fa-chart-bar"></i> Chart View
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stats Cards -->
+                <div class="row mb-4">
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="card border-left-primary shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                            Total Records
+                                        </div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="totalRecords">0</div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-database fa-2x text-gray-300"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="card border-left-success shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                            Average Level
+                                        </div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="avgLevel">0.0m</div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-chart-line fa-2x text-gray-300"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="card border-left-info shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                            Regions
+                                        </div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="totalRegions">0</div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-map-marker-alt fa-2x text-gray-300"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="card border-left-warning shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                            Data Quality
+                                        </div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="dataQuality">High</div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Query Interface -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Ask JalDoot</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="queryInput" 
+                                           placeholder="Ask about groundwater data...">
+                                    <button class="btn btn-primary" type="button" id="submitQuery">
+                                        <i class="fas fa-search"></i> Ask
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="btn-group w-100" role="group">
+                                    <button type="button" class="btn btn-outline-secondary" id="voiceInput">
+                                        <i class="fas fa-microphone"></i> Voice
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary" id="clearQuery">
+                                        <i class="fas fa-times"></i> Clear
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Section -->
+                <div class="row mb-4" id="chartsSection">
+                    <div class="col-lg-6 mb-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="m-0 font-weight-bold text-primary">Groundwater Levels</h6>
+                            </div>
+                            <div class="card-body">
+                                <div id="groundwaterChart" style="height: 300px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 mb-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="m-0 font-weight-bold text-primary">Regional Comparison</h6>
+                            </div>
+                            <div class="card-body">
+                                <div id="regionalChart" style="height: 300px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 mb-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="m-0 font-weight-bold text-primary">Aquifer Types</h6>
+                            </div>
+                            <div class="card-body">
+                                <div id="aquiferChart" style="height: 300px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 mb-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="m-0 font-weight-bold text-primary">Well Types</h6>
+                            </div>
+                            <div class="card-body">
+                                <div id="wellTypeChart" style="height: 300px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Data Table -->
+                <div class="card" id="tableSection" style="display: none;">
+                    <div class="card-header">
+                        <h6 class="m-0 font-weight-bold text-primary">Groundwater Data</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered" id="dataTable">
+                                <thead>
+                                    <tr>
+                                        <th>Region</th>
+                                        <th>District</th>
+                                        <th>State</th>
+                                        <th>Year</th>
+                                        <th>Month</th>
+                                        <th>Measurement (m)</th>
+                                        <th>Well Type</th>
+                                        <th>Aquifer Type</th>
+                                        <th>Data Quality</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dataTableBody">
+                                    <!-- Data will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Response Section -->
+                <div class="card mt-4" id="aiResponseSection" style="display: none;">
+                    <div class="card-header">
+                        <h6 class="m-0 font-weight-bold text-primary">JalDoot Response</h6>
+                    </div>
+                    <div class="card-body">
+                        <div id="aiResponse"></div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Voice Modal -->
+    <div class="modal fade" id="voiceModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Voice Input</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div id="voiceStatus" class="mb-3">
+                        <i class="fas fa-microphone fa-3x text-primary"></i>
+                        <p class="mt-2">Click to start recording</p>
+                    </div>
+                    <button class="btn btn-primary btn-lg" id="startRecording">
+                        <i class="fas fa-microphone"></i> Start Recording
+                    </button>
+                    <button class="btn btn-danger btn-lg" id="stopRecording" style="display: none;">
+                        <i class="fas fa-stop"></i> Stop Recording
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+</body>
+</html>
